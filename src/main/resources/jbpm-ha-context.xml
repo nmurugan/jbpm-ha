@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+           http://www.springframework.org/schema/tx
+           http://www.springframework.org/schema/tx/spring-tx.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/aop 
+           http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+
+	<bean id="clusterService" class="com.redhat.solutions.mw.jbpm.ha.impl.ClusterServiceImpl">
+		<property name="clusterRulesChangesetPath" value="${jbpmha.clusterRulesChangesetPath}" />
+		<property name="clusterRulesChangesetPathType" value="${jbpmha.clusterRulesChangesetPathType}" />
+		<property name="kloggerOutputPath" value="${jbpmha.kloggerOutputPath}" />
+		<property name="eventEntryPointName" value="${jbpmha.eventEntryPointName}" />
+		<property name="pollIntervalSeconds" value="${jbpmha.pollIntervalSeconds}" />
+		<property name="nodeName" value="${jbpmha.nodeName}" />
+	</bean>
+
+	<bean id="knowledgeBaseService" class="com.redhat.solutions.mw.jbpm.ha.impl.KnowledgeBaseServiceImpl">
+	</bean>
+
+	<bean id="knowledgeSessionService" class="com.redhat.solutions.mw.jbpm.ha.impl.KnowledgeSessionServiceImpl">
+		<!-- <property name="knowledgeBaseService" ref="knowledgeBaseService" /> -->
+	</bean>
+
+</beans>

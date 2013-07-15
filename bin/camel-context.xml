@@ -1,0 +1,49 @@
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+       		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       		http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+	<bean id="commandConsumer" class="com.redhat.solutions.mw.jbpm.ha.camel.CommandConsumerImpl">
+	</bean>
+	<bean id="commandProducer" class="com.redhat.solutions.mw.jbpm.ha.camel.CommandProducerImpl">
+		<property name="destinationName" value="activemq:topic:jbpmha.command" />
+	</bean>
+
+	<bean id="failoverConsumer" class="com.redhat.solutions.mw.jbpm.ha.camel.FailoverConsumerImpl">
+	</bean>
+	<bean id="failoverProducer" class="com.redhat.solutions.mw.jbpm.ha.camel.FailoverProducerImpl">
+		<property name="destinationName" value="activemq:topic:jbpmha.failover" />
+	</bean>
+
+	<bean id="heartbeatConsumer" class="com.redhat.solutions.mw.jbpm.ha.camel.HeartbeatConsumerImpl">
+	</bean>
+
+	<bean id="heartbeatProducer" class="com.redhat.solutions.mw.jbpm.ha.camel.HeartbeatProducerImpl">
+		<property name="destinationName" value="activemq:topic:jbpmha.heartbeat" />
+	</bean>
+
+	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="brokerURL" value="${activemq.url}" />
+		<property name="userName" value="${activemq.username}" />
+		<property name="password" value="${activemq.password}" />
+	</bean>
+
+	<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+		<route>
+			<description>Command Consumer Route</description>
+			<from uri="activemq:topic:jbpmha.command" />
+			<process ref="commandConsumer" />
+		</route>
+		<route>
+			<description>Failover Consumer Route</description>
+			<from uri="activemq:topic:jbpmha.failover" />
+			<process ref="failoverConsumer" />
+		</route>
+		<route>
+			<description>Heartbeat Consumer Route</description>
+			<from uri="activemq:topic:jbpmha.heartbeat" />
+			<process ref="heartbeatConsumer" />
+		</route>
+	</camelContext>
+
+</beans>

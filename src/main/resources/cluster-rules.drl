@@ -1,0 +1,43 @@
+package org.drools.server
+
+import java.util.Date
+import java.lang.String
+
+import com.redhat.solutions.mw.jbpm.ha.Node;
+import com.redhat.solutions.mw.jbpm.ha.NodeSession;
+import com.redhat.solutions.mw.jbpm.ha.NodeHeartbeatEvent;
+import com.redhat.solutions.mw.jbpm.ha.NodeFailoverEvent;
+
+global com.redhat.solutions.mw.jbpm.ha.NodeRepository nodeRepository;
+global com.redhat.solutions.mw.jbpm.ha.ClusterService clusterService;
+global String localNodeName;
+
+dialect "mvel"
+
+declare NodeHeartbeatEvent
+    @role( event )      
+end
+
+declare NodeFailoverEvent
+    @role( event )      
+end
+
+rule "Cluster Master Election"
+// Model the 
+when
+	node : Node(status== Node.ACTIVE_STATUS)
+	node.Node( clusterEntyTime  )
+	//TODO...
+then
+
+end
+
+rule "Detect Failure"
+when
+then
+end
+
+
+
+
+

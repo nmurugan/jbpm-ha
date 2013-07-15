@@ -1,0 +1,75 @@
+package org.drools.server
+
+import java.util.Date
+import java.lang.String
+
+import com.redhat.solutions.mw.jbpm.ha.Node;
+import com.redhat.solutions.mw.jbpm.ha.NodeSession;
+import com.redhat.solutions.mw.jbpm.ha.NodeHeartbeatEvent;
+import com.redhat.solutions.mw.jbpm.ha.NodeFailoverEvent;
+
+global com.redhat.solutions.mw.jbpm.ha.NodeRepository nodeRepository;
+global com.redhat.solutions.mw.jbpm.ha.ClusterService clusterService;
+global String localNodeName;
+
+dialect "mvel"
+
+declare NodeHeartbeatEvent
+    @role( event )      
+end
+
+declare NodeFailoverEvent
+    @role( event )      
+end
+
+
+rule "server failure detection"
+salience 10
+when
+	server : BPMServer(status == "Y");
+	
+	ServerStatus1 : ServerStatus( nodeName == server.nodeName, status == "Y") from  entry-point "serverStream"
+	
+	not ServerStatus( this != ServerStatus1, nodeName == server.nodeName, status == "Y", this after[3m,5m] ServerStatus1 ) from  entry-point "serverStream"
+then
+
+	// Redirect Traffic in Load Balancer to simulate a real load balancer
+	String node = server.getNodeName();
+	if(node.equals("Node1")){
+		server.setTargetServer("Node2");
+	}
+	if(node.equals("Node2")){
+		server.setTargetServer("Node1");
+	}
+	if(node.equals("Node3")){
+		server.setTargetServer("Node4");
+	}
+	if(node.equals("Node4")){
+		server.setTargetServer("Node3");
+	}
+	
+	// Notify the server failed via the topic
+	messageProducer.send(server);
+	
+	// Remove the server from the session so this rule won't fire again
+	retract(server);
+	
+	logDebug("server failed ---> " + server.getNodeName() + " no longer provide service ");
+	logDebug("Message send to target server  " + server.getTargetServer() + " to loan node session of server " + node);
+	System.out.println("server failed ---> " + server.getNodeName() + " no longer provide service ");	
+end
+
+rule "server success"
+salience 20
+when
+	server : BPMServer(status == "Y");
+	
+	ServerStatus1 : ServerStatus( nodeName == server.nodeName , status == "Y") from  entry-point "serverStream"
+	
+	ServerStatus2 : ServerStatus( this !=ServerStatus1, nodeName == server.nodeName, nodeName == server.nodeName, status == "Y", this after[3m,5m] ServerStatus1 ) from  entry-point "serverStream"
+then
+	String node = server.getNodeName();
+	logDebug("server " + node + " is running");
+	System.out.println("server " + node + " is running");
+end
+
